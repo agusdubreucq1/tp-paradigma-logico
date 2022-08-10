@@ -68,8 +68,34 @@ cambiaron(bobby, [2], flor, [4, 6]).
 
 %% Implementar nuevos predicados aquí...
 
+/*-------------------------------------------------------1-------------------------------------------------------*/
+/*Relacionar a una persona con una figurita si la tiene repetida, que se cumple cuando consiguió
+la figurita en cuestión por medios distintos.
+Por ejemplo, Flor tiene repetida la 5 ya que la consiguió en dos paquetes distintos*/
 
 
+%OPCION 1 SIN FINDALL
+/*figuritaRepetida(Persona,Figurita):-
+  consiguio(Persona,Figurita,_), %genero/verifico que la Persona tenga la Figurita
+  repetida(Persona,Figurita). %verifica si la Figurita está repetida entre las Figuritas de la Persona
+
+repetida(Persona,Figurita):-
+  consiguio(Persona,Figuritas,_), %liga todas las Figuritas de la Persona en cuestion
+  consiguio(Persona,Figurita,Medio1), %analizo el medio por el que obtuvo la figurita
+  Figuritas=Figurita, % Figuritas ahora tiene las iguales a Figurita
+  consiguio(Persona,Figuritas,Medio2), 
+  Medio1\=Medio2. %Busca si existe alguna tal que el medio por el cual se obtuvo sea distinto al medio de la Figurita
+*/
+
+%OPCION 2 CON FINDALL
+figuritaRepetida(Persona,Figurita):-
+  consiguio(Persona,Figurita,_), %acoto dominio
+  findall(Medio,consiguio(Persona,Figurita,Medio),ListaDeMediosDeObtencionFigurita),
+  length(ListaDeMediosDeObtencionFigurita, CantidadMedios),
+  CantidadMedios>1.
+
+/*---------------------------------------------------------------------------------------------------------------*/
+  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Pruebas
@@ -100,3 +126,33 @@ test(cuandoDosPersonasCambianFiguritasAmbasConsiguenFiguritasPorCanjeConLaOtraIn
 :- end_tests(consiguio).
 
 %% Tests de requerimiento, implementar aquí...
+
+
+:- begin_tests(figuritaRepetida).
+
+%% Testeo de consultas que esperan que sean ciertas
+test(florTieneRepetidaLa5, nondet):-
+  figuritaRepetida(flor, 5).
+test(andyTieneRepetidaLa4, nondet):-
+  figuritaRepetida(andy, 4).
+
+%% Testeo de consultas que esperan que sean falsas
+test(bobbyTieneRepetidaLa3, fail):-
+  figuritaRepetida(bobby, 3).
+
+test(bobbyTieneRepetidaLa9, fail):-
+  figuritaRepetida(bobby, 9).
+
+%% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
+test(figuritasRepetidasDeAndy, set(Figurita == [1,6,4])):-
+  figuritaRepetida(andy, Figurita).
+
+   %Nota:tambien suma la figurata 1 que consiguio andy mediante el intercambio con flor
+   /*4 ?- consiguio(andy,1,QuéMedio).
+          QuéMedio = paquete(3) ;
+          QuéMedio = canje(flor, [4, 7]) ;*/
+
+test(quienTieneLa5Repetida, set(Persona == [flor,bobby])):-
+  figuritaRepetida(Persona, 5).
+
+:- end_tests(figuritaRepetida).
