@@ -12,6 +12,7 @@ popularidad(littleTwinStars, 2).
 popularidad(badtzMaru, 2).
 popularidad(gudetama, 1).
 
+
 % consiguio(Persona, NroFigurita, Medio)
 
 /*
@@ -40,6 +41,7 @@ consiguio(andy, 4, paquete(3)).
 
 consiguio(flor, 5, paquete(1)).
 consiguio(flor, 5, paquete(2)).
+consiguio(flor,8,paquete(3)).
 
 consiguio(bobby, 3, paquete(1)).
 consiguio(bobby, 5, paquete(1)).
@@ -93,10 +95,71 @@ figuritaRepetida(Persona,Figurita):-
   findall(Medio,consiguio(Persona,Figurita,Medio),ListaDeMediosDeObtencionFigurita),
   length(ListaDeMediosDeObtencionFigurita, CantidadMedios),
   CantidadMedios>1.
+/*---------------------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------2-------------------------------------------------------*/
+
+/*imagen(Figurita,Categoria)
+Categoria:
+basica(Personaje)
+rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)
+brillante(Personaje)*/
+
+imagen(1,basica(kitty)).
+imagen(1,basica(keroppi)).
+imagen(2,brillante(kitty)).
+imagen(3,brillante(melody)).
+imagen(4,basica(0)).
+imagen(5,rompecabezas(kittyYCompania,[5,6,7])).
+imagen(8,basica(Personaje)):-
+  popularidad(Personaje,_).
+
 
 /*---------------------------------------------------------------------------------------------------------------*/
-  
 
+/*-------------------------------------------------------3-------------------------------------------------------*/
+
+
+valiosa(Figurita):-
+  consiguio(_,Figurita,_), %acoto dominio
+  not(figuritaRepetida(_,Figurita)). %no existe alguien con esa Figurita repetida
+
+valiosa(Figurita):-
+  consiguio(_,Figurita,_), %acoto dominio 
+  atractivo(Figurita,NivelDeAtractivo),
+  NivelDeAtractivo>7.
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita,brillante(Personaje)),
+  popularidad(Personaje,Popularidad),
+  NivelDeAtractivo is 5*Popularidad.
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita,basica(Personaje)),
+  findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
+  sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
+
+popularidades(Figurita,Popularidad):-
+  imagen(Figurita,basica(Personaje)),
+  popularidad(Personaje,Popularidad).
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita,basica(Personaje)),
+  not(popularidad(Personaje,_)), %(el caso de Personaje = 0)
+  NivelDeAtractivo is 0.
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita,rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)),
+  length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
+  TamLista<=2,
+  NivelDeAtractivo is 2.
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita,rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)),
+  length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
+  TamLista>2,
+  NivelDeAtractivo is 0.
+
+/*---------------------------------------------------------------------------------------------------------------*/
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Pruebas
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,7 +178,7 @@ test(florConsiguioLa5EnSuPrimerPaquete, fail):-
   consiguio(flor, 2, paquete(1)).
 
 %% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
-test(figuritasQueConsiguioFlor, set(Figurita == [5, 4, 7, 2])):-
+test(figuritasQueConsiguioFlor, set(Figurita == [5, 4, 7, 2,8])):-
   consiguio(flor, Figurita, _).
 
 %% Test basado en condiciones más complejas
@@ -156,3 +219,34 @@ test(quienTieneLa5Repetida, set(Persona == [flor,bobby])):-
   figuritaRepetida(Persona, 5).
 
 :- end_tests(figuritaRepetida).
+
+/*extra*/
+:- begin_tests(atractivo).
+
+%% Testeo de consultas que esperan que sean ciertas
+test(atractivoDeFigurita8es23, nondet):-
+  atractivo(8,23).
+
+:- end_tests(atractivo).
+
+
+:- begin_tests(valiosa).
+
+%% Testeo de consultas que esperan que sean ciertas
+test(figurita7esValiosaPorqueNadieLaTieneRepetida, nondet):-
+  valiosa(7).
+test(figurita3EsValiosaPorqueSuNivelDeAtractivoEsMayorA7, nondet):-
+  valiosa(3).
+
+%% Testeo de consultas que esperan que sean falsas
+test(figurita1NOesValiosaPorqueAndyLaTieneRepetida, fail):-
+  valiosa(1).
+test(figurita4NOesValiosaPorqueSuNivelDeAtractivoEsMenorA7, fail):-
+  valiosa(4).
+
+%% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
+test(figuritasValiosasConseguidas, set(Figurita == [3, 2, 7, 8])):-
+  valiosa(Figurita).
+
+:- end_tests(valiosa).
+
