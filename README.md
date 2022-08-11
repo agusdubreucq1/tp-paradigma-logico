@@ -2,7 +2,7 @@
 
 Integrantes:
 
-- **Completar con nombre y apellido**
+- **Ernestina Kerbs**
 - **Completar con nombre y apellido**
 - **Completar con nombre y apellido**
 - **Completar con nombre y apellido**
