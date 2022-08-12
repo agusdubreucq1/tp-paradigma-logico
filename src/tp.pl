@@ -127,7 +127,8 @@ valiosa(Figurita):-
   not(figuritaRepetida(_,Figurita)). %no existe alguien con esa Figurita repetida
 
 valiosa(Figurita):-
-  consiguio(_,Figurita,_), %acoto dominio 
+  consiguio(_,Figurita,_), %acoto dominio
+  imagen(Figurita,_), %importante filtrar solo las figuritas que TIENEN IMAGEN
   atractivo(Figurita,NivelDeAtractivo),
   NivelDeAtractivo>7.
 
@@ -168,20 +169,42 @@ atractivo(Figurita,NivelDeAtractivo):-
 /*-------------------------------------------------------4-------------------------------------------------------*/
 /* Relacionar a una persona con la imagen más atractiva de las figuritas que consiguió.*/
 
-laMasAtractivaDe(Persona,ImagenMasAtractiva):-
+laImagenMasAtractivaDe(Persona,ImagenMasAtractiva):-
   imagen(FiguritaMasAtractiva,ImagenMasAtractiva), %busco la figurita que tiene la Imagen evaluada
   consiguio(Persona,FiguritaMasAtractiva,_),
   forall((consiguio(Persona,FiguritasPersona,_),imagen(FiguritasPersona,_),FiguritasPersona\=FiguritaMasAtractiva),
-   masAtractiva(FiguritaMasAtractiva,FiguritasPersona)).
+  figuritaMasAtractiva(FiguritaMasAtractiva,FiguritasPersona)).
   %se debe cumplir para TODA FIGURITA DE PERSONA -QUE TENGA IMAGEN- Y SEA DISTINTA A LA MAS ATRACTIVA, que sean menos atractivas
 
-masAtractiva(Figurita1,Figurita2):-
+figuritaMasAtractiva(Figurita1,Figurita2):-
   atractivo(Figurita1,NivelAtractivo1),
   atractivo(Figurita2,NivelAtractivo2),
   NivelAtractivo1>NivelAtractivo2.
   
 /*---------------------------------------------------------------------------------------------------------------*/
 
+/*-------------------------------------------------------5-------------------------------------------------------*/
+/*Relacionar a una persona con un canje mediante el cual hizo negocio, si a partir de dicho canje
+consiguió alguna figurita valiosa, y todas las figuritas que le dio a la otra persona en ese canje no
+son valiosas.
+Por ejemplo, en base a los datos iniciales, Flor hizo negocio con el canje con Bobby, ya que le
+dio la 4 y la 6 que no son valiosas y consiguió la 2 que sí lo es.*/
+
+/*consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-*/
+
+hizoNegocio(Persona,canje(Canjeante,ListaACambio)):-
+  valiosa(FiguritaValiosa), %de todas las figuritas valiosas
+  consiguio(Persona,FiguritaValiosa,canje(Canjeante,ListaACambio)), %las que consiguió la persona mediante canje
+  forall(consiguio(Persona,FiguritaValiosa,canje(_,[ACambio])),not(valiosa(ACambio))).
+    
+
+/*Prueba recorrer lista
+aCambio([2,3]).
+forall(aCambio([X]), valiosa(X)).
+
+prueba extra
+valiosa(FiguritaValiosa),consiguio(flor,FiguritaValiosa,canje(Quien,Acambio)). */
+/*---------------------------------------------------------------------------------------------------------------*/
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Pruebas
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,33 +295,71 @@ test(figuritasValiosasConseguidas, set(Figurita == [3, 2, 7, 8])):-
 
 :- end_tests(valiosa).
 
-:- begin_tests(laMasAtractivaDe).
+:- begin_tests(laImagenMasAtractivaDe).
 
 %% Testeo de consultas que esperan que sean ciertas
 test(laMasAtractivaDeAndyEsFigurita2, nondet):-
-  laMasAtractivaDe(andy,brillante(kitty)).
+  laImagenMasAtractivaDe(andy,brillante(kitty)).
 test(laMasAtractivaDeFlorEs2, nondet):-
-  laMasAtractivaDe(flor,brillante(kitty)).
+  laImagenMasAtractivaDe(flor,brillante(kitty)).
     
 test(laMasAtractivaDeBobbyEs3, nondet):-
-  laMasAtractivaDe(bobby,brillante(melody)).
+  laImagenMasAtractivaDe(bobby,brillante(melody)).
 
 %% Testeo de consultas que esperan que sean falsas
 test(laMasAtractivaDeBobbyNOEsFigurita2, fail):-
-  laMasAtractivaDe(bobby,brillante(kitty)).
+  laImagenMasAtractivaDe(bobby,brillante(kitty)).
 
 test(laMasAtractivaDeFlorNOEsFigurita8, fail):-
-  laMasAtractivaDe(flor,basica(kitty,keroppi,melody,cinnamoroll,pompompurin,littleTwinStars,badtzMaru,gudetama)).
+  laImagenMasAtractivaDe(flor,basica(kitty,keroppi,melody,cinnamoroll,pompompurin,littleTwinStars,badtzMaru,gudetama)).
 
 %% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
 test(figuritaMasAtractivaDeFlor, set(ImagenFigurita == [brillante(kitty)])):-
-  laMasAtractivaDe(flor,ImagenFigurita).
+  laImagenMasAtractivaDe(flor,ImagenFigurita).
  %recibio la figurita 2 en un canje con bobby 
 
 test(figuritaMasAtractivaDeAndy, set(ImagenFigurita == [brillante(kitty)])):-
-  laMasAtractivaDe(andy,ImagenFigurita).
+  laImagenMasAtractivaDe(andy,ImagenFigurita).
 
 test(paraQuienLa3EsSuMasAtractiva, set(Persona == [bobby])):-
-  laMasAtractivaDe(Persona,brillante(melody)).
+  laImagenMasAtractivaDe(Persona,brillante(melody)).
 
-:- end_tests(laMasAtractivaDe).
+:- end_tests(laImagenMasAtractivaDe).
+
+:- begin_tests(hizoNegocio).
+
+/*Por ejemplo, en base a los datos iniciales, Flor hizo negocio con el canje con Bobby, ya que le
+dio la 4 y la 6 que no son valiosas y consiguió la 2 que sí lo es.*/
+
+%% Testeo de consultas que esperan que sean ciertas
+test(florHizoNegocioConElCanjeConBobby, nondet):-
+  hizoNegocio(flor,canje(bobby,[4,6])). % flor le dio a bobby la 4 y la 6 por la 2
+
+test(florHizoNegocioConElCanjeConAndy, nondet):-
+  hizoNegocio(flor,canje(andy,[1])). % andy le dio a flor la 4 y la 7 por la 1, (la 7 es valiosa, la 1 no)
+
+%% Testeo de consultas que esperan que sean falsas
+test(andyNOHizoNegocioConElCanjeConFlor, fail):-
+  hizoNegocio(andy,canje(flor,[4,7])). % andy le dio a flor la 4 y la 7 por la 1
+
+test(bobbyNOHizoNegocioConElCanjeConFlor, fail):-
+  hizoNegocio(bobby,canje(flor,[2])). %bobby le dio a flor la 2
+
+%% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
+test(conQueCanjeHizoNegocioAndy, set(CanjeNegocio == [])):-
+  hizoNegocio(andy,CanjeNegocio). %con ninguno
+
+  test(conQueCanjeHizoNegocioFlor, set(CanjeNegocio == [canje(andy,[1]),canje(bobby,[4,6])])):-
+    hizoNegocio(flor,CanjeNegocio). %con ninguno
+
+test(conQuienHizoNegocioFlor, set(Quien == [bobby,andy])):-
+  hizoNegocio(flor,canje(Quien,_)).
+
+/*test(conQuienNoHizoNegocioBobby, set(Quien == [flor])):-
+  not(hizoNegocio(bobby,canje(Quien,_))).
+RECORDAR: not() NO ES INVERSIBLE */
+/*
+
+
+:- end_tests(hizoNegocio).
+
