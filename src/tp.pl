@@ -66,6 +66,9 @@ consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-
 cambiaron(andy, [4,7], flor, [1]).
 cambiaron(bobby, [2], flor, [4, 6]).
 
+%andy tiene la 1 
+%bobby tiene la 4 y la 6
+%flor tiene la 4, 7 y 2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Implementar nuevos predicados aquí...
@@ -128,6 +131,10 @@ valiosa(Figurita):-
   atractivo(Figurita,NivelDeAtractivo),
   NivelDeAtractivo>7.
 
+popularidades(Figurita,Popularidad):-
+  imagen(Figurita,basica(Personaje)),
+  popularidad(Personaje,Popularidad).
+
 atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,brillante(Personaje)),
   popularidad(Personaje,Popularidad),
@@ -138,9 +145,6 @@ atractivo(Figurita,NivelDeAtractivo):-
   findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
   sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
 
-popularidades(Figurita,Popularidad):-
-  imagen(Figurita,basica(Personaje)),
-  popularidad(Personaje,Popularidad).
 
 atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,basica(Personaje)),
@@ -160,6 +164,24 @@ atractivo(Figurita,NivelDeAtractivo):-
   NivelDeAtractivo is 0.
 
 /*---------------------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------4-------------------------------------------------------*/
+/* Relacionar a una persona con la imagen más atractiva de las figuritas que consiguió.*/
+
+laMasAtractivaDe(Persona,ImagenMasAtractiva):-
+  imagen(FiguritaMasAtractiva,ImagenMasAtractiva), %busco la figurita que tiene la Imagen evaluada
+  consiguio(Persona,FiguritaMasAtractiva,_),
+  forall((consiguio(Persona,FiguritasPersona,_),imagen(FiguritasPersona,_),FiguritasPersona\=FiguritaMasAtractiva),
+   masAtractiva(FiguritaMasAtractiva,FiguritasPersona)).
+  %se debe cumplir para TODA FIGURITA DE PERSONA -QUE TENGA IMAGEN- Y SEA DISTINTA A LA MAS ATRACTIVA, que sean menos atractivas
+
+masAtractiva(Figurita1,Figurita2):-
+  atractivo(Figurita1,NivelAtractivo1),
+  atractivo(Figurita2,NivelAtractivo2),
+  NivelAtractivo1>NivelAtractivo2.
+  
+/*---------------------------------------------------------------------------------------------------------------*/
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Pruebas
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -250,3 +272,33 @@ test(figuritasValiosasConseguidas, set(Figurita == [3, 2, 7, 8])):-
 
 :- end_tests(valiosa).
 
+:- begin_tests(laMasAtractivaDe).
+
+%% Testeo de consultas que esperan que sean ciertas
+test(laMasAtractivaDeAndyEsFigurita2, nondet):-
+  laMasAtractivaDe(andy,brillante(kitty)).
+test(laMasAtractivaDeFlorEs2, nondet):-
+  laMasAtractivaDe(flor,brillante(kitty)).
+    
+test(laMasAtractivaDeBobbyEs3, nondet):-
+  laMasAtractivaDe(bobby,brillante(melody)).
+
+%% Testeo de consultas que esperan que sean falsas
+test(laMasAtractivaDeBobbyNOEsFigurita2, fail):-
+  laMasAtractivaDe(bobby,brillante(kitty)).
+
+test(laMasAtractivaDeFlorNOEsFigurita8, fail):-
+  laMasAtractivaDe(flor,basica(kitty,keroppi,melody,cinnamoroll,pompompurin,littleTwinStars,badtzMaru,gudetama)).
+
+%% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
+test(figuritaMasAtractivaDeFlor, set(ImagenFigurita == [brillante(kitty)])):-
+  laMasAtractivaDe(flor,ImagenFigurita).
+ %recibio la figurita 2 en un canje con bobby 
+
+test(figuritaMasAtractivaDeAndy, set(ImagenFigurita == [brillante(kitty)])):-
+  laMasAtractivaDe(andy,ImagenFigurita).
+
+test(paraQuienLa3EsSuMasAtractiva, set(Persona == [bobby])):-
+  laMasAtractivaDe(Persona,brillante(melody)).
+
+:- end_tests(laMasAtractivaDe).
