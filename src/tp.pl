@@ -421,7 +421,10 @@ test(conQuienHizoNegocioFlor, set(Quien == [bobby,andy])):-
 %Bobby no necesita
 test(bobbyNoNecesitaFigurita, set(Cual == [])):-
   necesita(bobby, Cual).
-
+/*
+test(quienTieneLa5, set(Quien == [bobby, flor])):-
+  necesita(Persona, 5).
+*/
 test(andyNecesitaFigurita, set(Cual == [5])):-
     necesita(andy, Cual). 
 
