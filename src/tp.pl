@@ -66,6 +66,7 @@ consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-
 cambiaron(andy, [4,7], flor, [1]).
 cambiaron(bobby, [2], flor, [4, 6]).
 
+
 %andy tiene la 1 
 %bobby tiene la 4 y la 6
 %flor tiene la 4, 7 y 2
@@ -93,11 +94,17 @@ repetida(Persona,Figurita):-
 */
 
 %OPCION 2 CON FINDALL
-figuritaRepetida(Persona,Figurita):-
+/*figuritaRepetida(Persona,Figurita):-
   consiguio(Persona,Figurita,_), %acoto dominio
   findall(Medio,consiguio(Persona,Figurita,Medio),ListaDeMediosDeObtencionFigurita),
   length(ListaDeMediosDeObtencionFigurita, CantidadMedios),
-  CantidadMedios>1.
+  CantidadMedios>1.*/
+%OPCION 3
+figuritaRepetida(Persona, Figurita):-
+  consiguio(Persona, Figurita, _),
+  consiguio(Persona, Figurita, Medio1),
+  consiguio(Persona, Figurita, Medio2),
+  Medio1 \= Medio2.
 /*---------------------------------------------------------------------------------------------------------------*/
 /*-------------------------------------------------------2-------------------------------------------------------*/
 
@@ -113,6 +120,8 @@ imagen(2,brillante(kitty)).
 imagen(3,brillante(melody)).
 imagen(4,basica(0)).
 imagen(5,rompecabezas(kittyYCompania,[5,6,7])).
+imagen(6,rompecabezas(kittyYCompania,[5,6,7])).
+imagen(7,rompecabezas(kittyYCompania,[5,6,7])).
 imagen(8,basica(Personaje)):-
   popularidad(Personaje,_).
 
@@ -141,10 +150,14 @@ atractivo(Figurita,NivelDeAtractivo):-
   popularidad(Personaje,Popularidad),
   NivelDeAtractivo is 5*Popularidad.
 
-atractivo(Figurita,NivelDeAtractivo):-
+/*atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,basica(Personaje)),
   findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
-  sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
+  sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).*/
+  atractivo(Figurita,NivelDeAtractivo):-
+    imagen(Figurita,basica(_)),
+    findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
+    sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
 
 
 atractivo(Figurita,NivelDeAtractivo):-
@@ -152,17 +165,28 @@ atractivo(Figurita,NivelDeAtractivo):-
   not(popularidad(Personaje,_)), %(el caso de Personaje = 0)
   NivelDeAtractivo is 0.
 
-atractivo(Figurita,NivelDeAtractivo):-
+/*atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)),
   length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
-  TamLista<=2,
-  NivelDeAtractivo is 2.
+  TamLista =< 2,
+  NivelDeAtractivo is 2.*/
+  atractivo(Figurita,NivelDeAtractivo):-
+    imagen(Figurita,rompecabezas(_,ListaOrdenadaDeFiguritasQueLaComponen)),
+    length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
+    TamLista =< 2,
+    NivelDeAtractivo is 2.
 
-atractivo(Figurita,NivelDeAtractivo):-
+
+/*atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)),
   length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
   TamLista>2,
-  NivelDeAtractivo is 0.
+  NivelDeAtractivo is 0.*/
+  atractivo(Figurita,NivelDeAtractivo):-
+    imagen(Figurita,rompecabezas(_,ListaOrdenadaDeFiguritasQueLaComponen)),
+    length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
+    TamLista>2,
+    NivelDeAtractivo is 0.
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
@@ -192,10 +216,16 @@ dio la 4 y la 6 que no son valiosas y consiguió la 2 que sí lo es.*/
 
 /*consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-*/
 
+/*hizoNegocio(Persona,canje(Canjeante,ListaACambio)):-
+  valiosa(FiguritaValiosa), %de todas las figuritas valiosas
+  consiguio(Persona,FiguritaValiosa,canje(Canjeante,ListaACambio)), %las que consiguió la persona mediante canje
+  forall(consiguio(Persona,FiguritaValiosa,canje(_,[ACambio])),not(valiosa(ACambio))).*/
+%OTRA FORMA HIZO NEGOCIO
 hizoNegocio(Persona,canje(Canjeante,ListaACambio)):-
   valiosa(FiguritaValiosa), %de todas las figuritas valiosas
   consiguio(Persona,FiguritaValiosa,canje(Canjeante,ListaACambio)), %las que consiguió la persona mediante canje
-  forall(consiguio(Persona,FiguritaValiosa,canje(_,[ACambio])),not(valiosa(ACambio))).
+  forall(member(ACambio, ListaACambio),not(valiosa(ACambio))).
+
     
 
 /*Prueba recorrer lista
@@ -205,6 +235,34 @@ forall(aCambio([X]), valiosa(X)).
 prueba extra
 valiosa(FiguritaValiosa),consiguio(flor,FiguritaValiosa,canje(Quien,Acambio)). */
 /*---------------------------------------------------------------------------------------------------------------*/
+/*Saber si una persona necesita una figurita, lo cual se cumple si le falta esa figurita y…
+- o bien ya consiguió todas las otras figuritas del álbum,
+- o bien forma parte de un mismo rompecabezas de otra figurita que sí consiguió.
+Por ejemplo, Flor necesita la 6, cuya imagen es parte del rompecabezas kittyYCompania para el
+cual tiene otra parte.*/
+
+necesita(Persona, Figurita):-
+  consiguio(Persona,_,_),
+  consiguio(_,Figurita,_),
+  not(consiguio(Persona, Figurita,_)),
+  forall((consiguio(_,Figuritas,_),Figuritas\=Figurita),consiguio(Persona, Figuritas,_)).
+necesita(Persona, Figurita):-
+  consiguio(Persona,_,_),
+  consiguio(_,Figurita,_),
+  not(consiguio(Persona, Figurita,_)),
+  imagen(Figurita, rompecabezas(_, ListaRompecabezas)),
+  /*findall(X, (consiguio(Persona,X,_),member(X,ListaRompecabezas)), Lista),
+  length(Lista, Tamanio),
+  Tamanio >0.*/
+  consiguio(Persona,X,_),
+  member(X,ListaRompecabezas).
+
+
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Pruebas
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -361,5 +419,5 @@ RECORDAR: not() NO ES INVERSIBLE */
 /*
 
 
-:- end_tests(hizoNegocio).
+:- end_tests(hizoNegocio).*/
 
