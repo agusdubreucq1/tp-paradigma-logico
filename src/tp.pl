@@ -413,6 +413,9 @@ test(conQueCanjeHizoNegocioAndy, set(CanjeNegocio == [])):-
 test(conQuienHizoNegocioFlor, set(Quien == [bobby,andy])):-
   hizoNegocio(flor,canje(Quien,_)).
 
+test(conQuePersonaCanjioBobby, set(Persona == [flor])):-
+  hizoNegocio(Persona,canje(bobby,_)).
+
 :- end_tests(hizoNegocio).
 
 
@@ -421,10 +424,12 @@ test(conQuienHizoNegocioFlor, set(Quien == [bobby,andy])):-
 %Bobby no necesita
 test(bobbyNoNecesitaFigurita, set(Cual == [])):-
   necesita(bobby, Cual).
-/*
-test(quienTieneLa5, set(Quien == [bobby, flor])):-
-  necesita(Persona, 5).
-*/
+
+
+test(quienNecesitaLa5, set(Quien == [andy])):-
+  necesita(Quien, 5).
+
+
 test(andyNecesitaFigurita, set(Cual == [5])):-
     necesita(andy, Cual). 
 
@@ -439,8 +444,6 @@ test(andyNoNecesitala6, fail):-
 
 
 :- end_tests(necesitaFigurita).
-
-%necesita(Persona, Figurita):-
 
 /*test(conQuienNoHizoNegocioBobby, set(Quien == [flor])):-
   not(hizoNegocio(bobby,canje(Quien,_))).
