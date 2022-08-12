@@ -3,7 +3,7 @@
 Integrantes:
 
 - **Ernestina Kerbs**
-- **Completar con nombre y apellido**
+- **Nicolas Klaver**
 - **Completar con nombre y apellido**
 - **Completar con nombre y apellido**
 
