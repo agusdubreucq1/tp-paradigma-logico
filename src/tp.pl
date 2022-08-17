@@ -80,26 +80,7 @@ la figurita en cuestión por medios distintos.
 Por ejemplo, Flor tiene repetida la 5 ya que la consiguió en dos paquetes distintos*/
 
 
-%OPCION 1 SIN FINDALL
-/*figuritaRepetida(Persona,Figurita):-
-  consiguio(Persona,Figurita,_), %genero/verifico que la Persona tenga la Figurita
-  repetida(Persona,Figurita). %verifica si la Figurita está repetida entre las Figuritas de la Persona
 
-repetida(Persona,Figurita):-
-  consiguio(Persona,Figuritas,_), %liga todas las Figuritas de la Persona en cuestion
-  consiguio(Persona,Figurita,Medio1), %analizo el medio por el que obtuvo la figurita
-  Figuritas=Figurita, % Figuritas ahora tiene las iguales a Figurita
-  consiguio(Persona,Figuritas,Medio2), 
-  Medio1\=Medio2. %Busca si existe alguna tal que el medio por el cual se obtuvo sea distinto al medio de la Figurita
-*/
-
-%OPCION 2 CON FINDALL
-/*figuritaRepetida(Persona,Figurita):-
-  consiguio(Persona,Figurita,_), %acoto dominio
-  findall(Medio,consiguio(Persona,Figurita,Medio),ListaDeMediosDeObtencionFigurita),
-  length(ListaDeMediosDeObtencionFigurita, CantidadMedios),
-  CantidadMedios>1.*/
-%OPCION 3
 figuritaRepetida(Persona, Figurita):-
   consiguio(Persona, Figurita, _),
   consiguio(Persona, Figurita, Medio1),
@@ -111,7 +92,7 @@ figuritaRepetida(Persona, Figurita):-
 /*imagen(Figurita,Categoria)
 Categoria:
 basica(Personaje)
-rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)
+rompecabezas(NombreRompecabezas)
 brillante(Personaje)*/
 
 imagen(1,basica(kitty)).
@@ -119,9 +100,9 @@ imagen(1,basica(keroppi)).
 imagen(2,brillante(kitty)).
 imagen(3,brillante(melody)).
 imagen(4,basica(0)).
-imagen(5,rompecabezas(kittyYCompania,[5,6,7])).
-imagen(6,rompecabezas(kittyYCompania,[5,6,7])).
-imagen(7,rompecabezas(kittyYCompania,[5,6,7])).
+imagen(5,rompecabezas(kittyYCompania)).
+imagen(6,rompecabezas(kittyYCompania)).
+imagen(7,rompecabezas(kittyYCompania)).
 imagen(8,basica(Personaje)):-
   popularidad(Personaje,_).
 
@@ -150,14 +131,11 @@ atractivo(Figurita,NivelDeAtractivo):-
   popularidad(Personaje,Popularidad),
   NivelDeAtractivo is 5*Popularidad.
 
-/*atractivo(Figurita,NivelDeAtractivo):-
-  imagen(Figurita,basica(Personaje)),
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita,basica(_)),
   findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
-  sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).*/
-  atractivo(Figurita,NivelDeAtractivo):-
-    imagen(Figurita,basica(_)),
-    findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
-    sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
+  sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
 
 
 atractivo(Figurita,NivelDeAtractivo):-
@@ -165,28 +143,22 @@ atractivo(Figurita,NivelDeAtractivo):-
   not(popularidad(Personaje,_)), %(el caso de Personaje = 0)
   NivelDeAtractivo is 0.
 
-/*atractivo(Figurita,NivelDeAtractivo):-
-  imagen(Figurita,rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)),
-  length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
-  TamLista =< 2,
-  NivelDeAtractivo is 2.*/
-  atractivo(Figurita,NivelDeAtractivo):-
-    imagen(Figurita,rompecabezas(_,ListaOrdenadaDeFiguritasQueLaComponen)),
-    length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
+
+atractivo(Figurita,NivelDeAtractivo):-
+    imagen(Figurita, rompecabezas(Nombre)),
+    findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
+    length(ListaRompecabezas,TamLista),
     TamLista =< 2,
     NivelDeAtractivo is 2.
 
 
-/*atractivo(Figurita,NivelDeAtractivo):-
-  imagen(Figurita,rompecabezas(NombreRompecabezas,ListaOrdenadaDeFiguritasQueLaComponen)),
-  length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
+
+atractivo(Figurita,NivelDeAtractivo):-
+  imagen(Figurita, rompecabezas(Nombre)),
+  findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
+  length(ListaRompecabezas,TamLista),
   TamLista>2,
-  NivelDeAtractivo is 0.*/
-  atractivo(Figurita,NivelDeAtractivo):-
-    imagen(Figurita,rompecabezas(_,ListaOrdenadaDeFiguritasQueLaComponen)),
-    length(ListaOrdenadaDeFiguritasQueLaComponen,TamLista),
-    TamLista>2,
-    NivelDeAtractivo is 0.
+  NivelDeAtractivo is 0.
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
@@ -216,11 +188,7 @@ dio la 4 y la 6 que no son valiosas y consiguió la 2 que sí lo es.*/
 
 /*consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-*/
 
-/*hizoNegocio(Persona,canje(Canjeante,ListaACambio)):-
-  valiosa(FiguritaValiosa), %de todas las figuritas valiosas
-  consiguio(Persona,FiguritaValiosa,canje(Canjeante,ListaACambio)), %las que consiguió la persona mediante canje
-  forall(consiguio(Persona,FiguritaValiosa,canje(_,[ACambio])),not(valiosa(ACambio))).*/
-%OTRA FORMA HIZO NEGOCIO
+
 hizoNegocio(Persona,canje(Canjeante,ListaACambio)):-
   valiosa(FiguritaValiosa), %de todas las figuritas valiosas
   consiguio(Persona,FiguritaValiosa,canje(Canjeante,ListaACambio)), %las que consiguió la persona mediante canje
@@ -250,10 +218,8 @@ necesita(Persona, Figurita):-
   consiguio(Persona,_,_),
   consiguio(_,Figurita,_),
   not(consiguio(Persona, Figurita,_)),
-  imagen(Figurita, rompecabezas(_, ListaRompecabezas)),
-  /*findall(X, (consiguio(Persona,X,_),member(X,ListaRompecabezas)), Lista),
-  length(Lista, Tamanio),
-  Tamanio >0.*/
+  imagen(Figurita, rompecabezas(Nombre)),
+  findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
   consiguio(Persona,X,_),
   member(X,ListaRompecabezas).
 
