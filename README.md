@@ -4,7 +4,7 @@ Integrantes:
 
 - **Ernestina Kerbs**
 - **Nicolas Klaver**
-- **Completar con nombre y apellido**
+- **Agustin Dubreucq**
 - **Completar con nombre y apellido**
 
 ## Consignas
