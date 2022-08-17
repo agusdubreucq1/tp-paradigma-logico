@@ -5,7 +5,7 @@ Integrantes:
 - **Ernestina Kerbs**
 - **Nicolas Klaver**
 - **Agustin Dubreucq**
-- **Completar con nombre y apellido**
+- **Jasson A. M. Rodriguez*
 
 ## Consignas
 

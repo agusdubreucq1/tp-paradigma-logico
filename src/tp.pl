@@ -220,8 +220,8 @@ necesita(Persona, Figurita):-
   not(consiguio(Persona, Figurita,_)),
   imagen(Figurita, rompecabezas(Nombre)),
   findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
-  consiguio(Persona,X,_),
-  member(X,ListaRompecabezas).
+  consiguio(Persona,OtraFigurita,_),
+  member(OtraFigurita,ListaRompecabezas).
 
 
 
