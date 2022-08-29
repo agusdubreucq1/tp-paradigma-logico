@@ -95,6 +95,7 @@ basica(Personaje)
 rompecabezas(NombreRompecabezas)
 brillante(Personaje)*/
 
+
 imagen(1,basica(kitty)).
 imagen(1,basica(keroppi)).
 imagen(2,brillante(kitty)).
@@ -117,7 +118,7 @@ valiosa(Figurita):-
   not(figuritaRepetida(_,Figurita)). %no existe alguien con esa Figurita repetida
 
 valiosa(Figurita):-
-  consiguio(_,Figurita,_), %acoto dominio
+  %consiguio(_,Figurita,_), %acoto dominio -- CORRECION
   imagen(Figurita,_), %importante filtrar solo las figuritas que TIENEN IMAGEN
   atractivo(Figurita,NivelDeAtractivo),
   NivelDeAtractivo>7.
@@ -208,7 +209,7 @@ valiosa(FiguritaValiosa),consiguio(flor,FiguritaValiosa,canje(Quien,Acambio)). *
 - o bien forma parte de un mismo rompecabezas de otra figurita que sí consiguió.
 Por ejemplo, Flor necesita la 6, cuya imagen es parte del rompecabezas kittyYCompania para el
 cual tiene otra parte.*/
-
+/*
 necesita(Persona, Figurita):-
   consiguio(Persona,_,_),
   consiguio(_,Figurita,_),
@@ -222,10 +223,26 @@ necesita(Persona, Figurita):-
   findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
   consiguio(Persona,OtraFigurita,_),
   member(OtraFigurita,ListaRompecabezas).
+*/
 
+necesita(Persona, Figurita):-
+  noConsiguioLaFigurita(Persona, Figurita),
+  forall((consiguio(_,Figuritas,_),Figuritas\=Figurita),consiguio(Persona, Figuritas,_)).
 
+necesita(Persona, Figurita):-
+  noConsiguioLaFigurita(Persona, Figurita),
+  imagen(Figurita, rompecabezas(Nombre)),
 
+  findall(FiguraDelRompecabezas, 
+          imagen(FiguraDelRompecabezas, rompecabezas(Nombre)),
+           ListaRompecabezas),
+  consiguio(Persona,OtraFigurita,_),
+  member(OtraFigurita,ListaRompecabezas).
 
+noConsiguioLaFigurita(Persona, Figurita):-
+  consiguio(Persona,_,_),
+  consiguio(_,Figurita,_),
+  not(consiguio(Persona, Figurita,_)).
 
 
 
