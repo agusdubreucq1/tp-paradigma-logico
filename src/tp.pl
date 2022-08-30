@@ -75,10 +75,9 @@ cambiaron(bobby, [2], flor, [4, 6]).
 %% Implementar nuevos predicados aquí...
 
 /*-------------------------------------------------------1-------------------------------------------------------*/
-/*Relacionar a una persona con una figurita si la tiene repetida, que se cumple cuando consiguió
-la figurita en cuestión por medios distintos.
-Por ejemplo, Flor tiene repetida la 5 ya que la consiguió en dos paquetes distintos*/
-
+/*        Relacionar a una persona con una figurita si la tiene repetida, que se cumple cuando consiguió
+          la figurita en cuestión por medios distintos.
+          Por ejemplo, Flor tiene repetida la 5 ya que la consiguió en dos paquetes distintos                    */
 
 
 figuritaRepetida(Persona, Figurita):-
@@ -87,7 +86,10 @@ figuritaRepetida(Persona, Figurita):-
   consiguio(Persona, Figurita, Medio2),
   Medio1 \= Medio2.
 /*---------------------------------------------------------------------------------------------------------------*/
+
 /*-------------------------------------------------------2-------------------------------------------------------*/
+
+%ANTES%
 
 /*imagen(Figurita,Categoria)
 Categoria:
@@ -95,56 +97,56 @@ basica(Personaje)
 rompecabezas(NombreRompecabezas)
 brillante(Personaje)*/
 
-
+/*
 imagen(1,basica(kitty)).
 imagen(1,basica(keroppi)).
+imagen(4,basica(0)).
+imagen(8,basica(Personaje)):-
+  popularidad(Personaje,_).
+*/
+
 imagen(2,brillante(kitty)).
 imagen(3,brillante(melody)).
-imagen(4,basica(0)).
 imagen(5,rompecabezas(kittyYCompania)).
 imagen(6,rompecabezas(kittyYCompania)).
 imagen(7,rompecabezas(kittyYCompania)).
-imagen(8,basica(Personaje)):-
-  popularidad(Personaje,_).
 
+%CORRECCION -MODELADO MAS APROPIADO PARA EL TIPO DE IMAGEN-
+imagen(1,basica([kitty,keroppi])).
+imagen(4,basica([])).
+imagen(8,basica(ListaPersonajes)):-
+  findall(Personaje,popularidad(Personaje,_),ListaPersonajes).
+%%%%%%%%%%%%%%%%%%%%
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------3-------------------------------------------------------*/
 
+%ANTES%
 
-valiosa(Figurita):-
-  consiguio(_,Figurita,_), %acoto dominio
-  not(figuritaRepetida(_,Figurita)). %no existe alguien con esa Figurita repetida
-
-valiosa(Figurita):-
-  %consiguio(_,Figurita,_), %acoto dominio -- CORRECION
-  imagen(Figurita,_), %importante filtrar solo las figuritas que TIENEN IMAGEN
-  atractivo(Figurita,NivelDeAtractivo),
-  NivelDeAtractivo>7.
-
+/* NO SE REQUIERE
 popularidades(Figurita,Popularidad):-
   imagen(Figurita,basica(Personaje)),
   popularidad(Personaje,Popularidad).
 
-atractivo(Figurita,NivelDeAtractivo):-
+*/
+/*atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,brillante(Personaje)),
   popularidad(Personaje,Popularidad),
-  NivelDeAtractivo is 5*Popularidad.
+  NivelDeAtractivo is 5*Popularidad.*/
 
-
-atractivo(Figurita,NivelDeAtractivo):-
+/*atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,basica(_)),
   findall(Popularidad,popularidades(Figurita,Popularidad),ListaDePopularidadPersonajes),
   sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
-
 
 atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita,basica(Personaje)),
   not(popularidad(Personaje,_)), %(el caso de Personaje = 0)
   NivelDeAtractivo is 0.
+*/
 
-
+/*
 atractivo(Figurita,NivelDeAtractivo):-
     imagen(Figurita, rompecabezas(Nombre)),
     findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
@@ -152,19 +154,77 @@ atractivo(Figurita,NivelDeAtractivo):-
     TamLista =< 2,
     NivelDeAtractivo is 2.
 
-
-
 atractivo(Figurita,NivelDeAtractivo):-
   imagen(Figurita, rompecabezas(Nombre)),
   findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
   length(ListaRompecabezas,TamLista),
   TamLista>2,
   NivelDeAtractivo is 0.
+*/
+
+
+valiosa(NumFigurita):-
+  consiguio(_,NumFigurita,_), %acoto dominio
+  not(figuritaRepetida(_,NumFigurita)). %no existe alguien con esa Figurita repetida
+
+%CORRECCION -GENERAR USANDO PREDICADO ACORDE AL CONTEXTO-
+
+valiosa(NumFigurita):-
+  %consiguio(_,Figurita,_), %acoto dominio -- CORRECION
+  imagen(NumFigurita,TipoImagen), %importante filtrar solo las figuritas que TIENEN IMAGEN
+  atractivo(TipoImagen,NivelDeAtractivo),
+  NivelDeAtractivo>7.
+
+%CORRECCION -EL PREDICADO ATRACTIVO DEPENDE DEL TIPO DE IMAGEN, NO DEL NUMERO-
+
+atractivo(brillante(Personaje),NivelDeAtractivo):-
+  popularidad(Personaje,Popularidad),
+  NivelDeAtractivo is 5*Popularidad.
+
+%ADAPTACION DE PREDICADO ATRACTIVO EN FUNCION DEL NUEVO MODELO DE FIGURITA BASICA
+
+atractivo(basica(ListaPersonajes),NivelDeAtractivo):-
+  findall(Popularidad,(nth0(_,ListaPersonajes,Personaje),popularidad(Personaje,Popularidad)),ListaDePopularidadPersonajes),
+  sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
+atractivo(basica([]),0).
+
+%MEJORAS EN REPETICION DE LOGICA AL DEFINIR UN ROMPECABEZAS ATRACTIVO
+
+atractivo(rompecabezas(NombreRompecabezas),2):-
+  imagen(_,rompecabezas(NombreRompecabezas)), %si es imagen de alguna figurita
+  esUnRompecabezasAtractivo(NombreRompecabezas).
+
+atractivo(rompecabezas(NombreRompecabezas),0):-
+  imagen(_,rompecabezas(NombreRompecabezas)), %si es imagen de alguna figurita
+  not(esUnRompecabezasAtractivo(NombreRompecabezas)).
+
+esUnRompecabezasAtractivo(NombreRompecabezas):-
+  %imagen(_,rompecabezas(NombreRompecabezas)), %si es imagen de alguna figurita-para la practica no es necesario que este predicado sea inversible-
+  %NombreRompecabezas ya viene ligada del predicado atractivo
+  findall(FiguritasDelRompecabezas,imagen(FiguritasDelRompecabezas,rompecabezas(NombreRompecabezas)),ListaFiguritasRompecabezas),
+  length(ListaFiguritasRompecabezas,TamLista),
+  TamLista=<2.
+
 
 /*---------------------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------4-------------------------------------------------------*/
-/* Relacionar a una persona con la imagen más atractiva de las figuritas que consiguió.*/
+/*              Relacionar a una persona con la imagen más atractiva de las figuritas que consiguió.             */
+
+%ANTES%
+
+/*
+figuritaMasAtractiva(Figurita1,Figurita2):-
+  atractivo(Figurita1,NivelAtractivo1),
+  atractivo(Figurita2,NivelAtractivo2),
+  NivelAtractivo1>NivelAtractivo2.
+*/
+
+
+%ADAPTACION PREDICADOS EN FUNCION A LA NUEVA DEFINICION DEL PREDICADO atractivo().
+
+/*                me parece mas claro seguir usando el numero de figurita para encontrar la mas atractiva, 
+                  y despues que figuritaMasAtractiva() se encargue de transformarlas en imagen  %(*)             */
 
 laImagenMasAtractivaDe(Persona,ImagenMasAtractiva):-
   imagen(FiguritaMasAtractiva,ImagenMasAtractiva), %busco la figurita que tiene la Imagen evaluada
@@ -174,58 +234,40 @@ laImagenMasAtractivaDe(Persona,ImagenMasAtractiva):-
   %se debe cumplir para TODA FIGURITA DE PERSONA -QUE TENGA IMAGEN- Y SEA DISTINTA A LA MAS ATRACTIVA, que sean menos atractivas
 
 figuritaMasAtractiva(Figurita1,Figurita2):-
-  atractivo(Figurita1,NivelAtractivo1),
-  atractivo(Figurita2,NivelAtractivo2),
-  NivelAtractivo1>NivelAtractivo2.
+  imagen(Figurita1,ImagenMasAtractiva), %(*)
+  imagen(Figurita2,ImagenMenosAtractiva),
+  atractivo(ImagenMasAtractiva,NivelAtractivo1),
+  atractivo(ImagenMenosAtractiva,NivelAtractivo2),
+  NivelAtractivo1>NivelAtractivo2.  
   
 /*---------------------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------5-------------------------------------------------------*/
-/*Relacionar a una persona con un canje mediante el cual hizo negocio, si a partir de dicho canje
-consiguió alguna figurita valiosa, y todas las figuritas que le dio a la otra persona en ese canje no
-son valiosas.
-Por ejemplo, en base a los datos iniciales, Flor hizo negocio con el canje con Bobby, ya que le
-dio la 4 y la 6 que no son valiosas y consiguió la 2 que sí lo es.*/
+/*      Relacionar a una persona con un canje mediante el cual hizo negocio, si a partir de dicho canje
+        consiguió alguna figurita valiosa, y todas las figuritas que le dio a la otra persona en ese canje no
+        son valiosas.
+        Por ejemplo, en base a los datos iniciales, Flor hizo negocio con el canje con Bobby, ya que le
+        dio la 4 y la 6 que no son valiosas y consiguió la 2 que sí lo es.                                       */
 
-/*consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-*/
-
+                         /*consiguio(Persona, Figurita, canje(Canjeante, ACambio)):-*/
 
 hizoNegocio(Persona,canje(Canjeante,ListaACambio)):-
   valiosa(FiguritaValiosa), %de todas las figuritas valiosas
   consiguio(Persona,FiguritaValiosa,canje(Canjeante,ListaACambio)), %las que consiguió la persona mediante canje
   forall(member(ACambio, ListaACambio),not(valiosa(ACambio))).
 
-    
-
-/*Prueba recorrer lista
-aCambio([2,3]).
-forall(aCambio([X]), valiosa(X)).
-
-prueba extra
-valiosa(FiguritaValiosa),consiguio(flor,FiguritaValiosa,canje(Quien,Acambio)). */
 /*---------------------------------------------------------------------------------------------------------------*/
-/*Saber si una persona necesita una figurita, lo cual se cumple si le falta esa figurita y…
-- o bien ya consiguió todas las otras figuritas del álbum,
-- o bien forma parte de un mismo rompecabezas de otra figurita que sí consiguió.
-Por ejemplo, Flor necesita la 6, cuya imagen es parte del rompecabezas kittyYCompania para el
-cual tiene otra parte.*/
-/*
-necesita(Persona, Figurita):-
-  consiguio(Persona,_,_),
-  consiguio(_,Figurita,_),
-  not(consiguio(Persona, Figurita,_)),
-  forall((consiguio(_,Figuritas,_),Figuritas\=Figurita),consiguio(Persona, Figuritas,_)).
-necesita(Persona, Figurita):-
-  consiguio(Persona,_,_),
-  consiguio(_,Figurita,_),
-  not(consiguio(Persona, Figurita,_)),
-  imagen(Figurita, rompecabezas(Nombre)),
-  findall(FiguraDelRompecabezas, imagen(FiguraDelRompecabezas, rompecabezas(Nombre)), ListaRompecabezas),
-  consiguio(Persona,OtraFigurita,_),
-  member(OtraFigurita,ListaRompecabezas).
-*/
 
-necesita(Persona, Figurita):-
+/*-------------------------------------------------------6-------------------------------------------------------*/
+/*              Saber si una persona necesita una figurita, lo cual se cumple si le falta esa figurita y…
+                - o bien ya consiguió todas las otras figuritas del álbum,
+                - o bien forma parte de un mismo rompecabezas de otra figurita que sí consiguió.
+                Por ejemplo, Flor necesita la 6, cuya imagen es parte del rompecabezas kittyYCompania para el
+                cual tiene otra parte.                                                                           */
+
+%ANTES%
+
+/*necesita(Persona, Figurita):-
   noConsiguioLaFigurita(Persona, Figurita),
   forall((consiguio(_,Figuritas,_),Figuritas\=Figurita),consiguio(Persona, Figuritas,_)).
 
@@ -242,7 +284,24 @@ necesita(Persona, Figurita):-
 noConsiguioLaFigurita(Persona, Figurita):-
   consiguio(Persona,_,_),
   consiguio(_,Figurita,_),
-  not(consiguio(Persona, Figurita,_)).
+  not(consiguio(Persona, Figurita,_)).*/
+
+
+%CORRECCION -NUEVA LOGICA PARA PREDICADO necesita()-
+
+necesita(Persona,NumFiguritaFaltante):-
+  consiguio(Persona,_,_), %consiguio aunque sea 1
+  imagen(NumFiguritaFaltante,rompecabezas(NombreRompecabezas)), %la faltante es de un rompecabezas
+  not(consiguio(Persona,NumFiguritaFaltante,_)), 
+  consiguio(Persona,OtraFigurita,_),
+  imagen(OtraFigurita,rompecabezas(NombreRompecabezas)). % y la persona consiguio OtraFigurita del mismo rompecabezas
+
+necesita(Persona,NumFiguritaFaltante):-
+  consiguio(Persona,_,_), %consiguio aunque sea 1
+  imagen(NumFiguritaFaltante,_), %existe la figurita
+  not(consiguio(Persona,NumFiguritaFaltante,_)),
+  forall((imagen(FiguritasAlbum,_),FiguritasAlbum\=NumFiguritaFaltante),consiguio(Persona,FiguritasAlbum,_)). %consiguio el resto de album
+
 
 
 
@@ -311,7 +370,7 @@ test(quienTieneLa5Repetida, set(Persona == [flor,bobby])):-
 
 %% Testeo de consultas que esperan que sean ciertas
 test(atractivoDeFigurita8es23, nondet):-
-  atractivo(8,23).
+  atractivo(basica([kitty, keroppi,melody,cinnamoroll,pompompurin, littleTwinStars, badtzMaru,gudetama]),23).
 
 :- end_tests(atractivo).
 
@@ -352,7 +411,7 @@ test(laMasAtractivaDeBobbyNOEsFigurita2, fail):-
   laImagenMasAtractivaDe(bobby,brillante(kitty)).
 
 test(laMasAtractivaDeFlorNOEsFigurita8, fail):-
-  laImagenMasAtractivaDe(flor,basica(kitty,keroppi,melody,cinnamoroll,pompompurin,littleTwinStars,badtzMaru,gudetama)).
+  laImagenMasAtractivaDe(flor,basica([kitty,keroppi,melody,cinnamoroll,pompompurin,littleTwinStars,badtzMaru,gudetama])).
 
 %% Testeo de consultas existenciales con múltiples respuestas => inversibilidad
 test(figuritaMasAtractivaDeFlor, set(ImagenFigurita == [brillante(kitty)])):-
