@@ -112,6 +112,7 @@ imagen(6,rompecabezas(kittyYCompania)).
 imagen(7,rompecabezas(kittyYCompania)).
 
 %CORRECCION -MODELADO MAS APROPIADO PARA EL TIPO DE IMAGEN-
+
 imagen(1,basica([kitty,keroppi])).
 imagen(4,basica([])).
 imagen(8,basica(ListaPersonajes)):-
@@ -184,9 +185,10 @@ atractivo(brillante(Personaje),NivelDeAtractivo):-
 %ADAPTACION DE PREDICADO ATRACTIVO EN FUNCION DEL NUEVO MODELO DE FIGURITA BASICA
 
 atractivo(basica(ListaPersonajes),NivelDeAtractivo):-
-  findall(Popularidad,(nth0(_,ListaPersonajes,Personaje),popularidad(Personaje,Popularidad)),ListaDePopularidadPersonajes),
+  findall(Popularidad,(member(Personaje, ListaPersonajes),popularidad(Personaje,Popularidad)),ListaDePopularidadPersonajes),
   sum_list(ListaDePopularidadPersonajes, NivelDeAtractivo).
 atractivo(basica([]),0).
+
 
 %MEJORAS EN REPETICION DE LOGICA AL DEFINIR UN ROMPECABEZAS ATRACTIVO
 
