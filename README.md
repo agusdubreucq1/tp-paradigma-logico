@@ -1,0 +1,1 @@
+# tp-paradigma-logico
